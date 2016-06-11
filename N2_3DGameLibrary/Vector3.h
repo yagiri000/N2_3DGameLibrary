@@ -13,7 +13,7 @@ public:
 	Vector3(const Vector3 &a) : x(a.x), y(a.y), z(a.z) { }
 
 	// 3つの値から作成するコンストラクタ
-	Vector3(int nx, int ny, int nz) : x(nx), y(ny), z(nz) {}
+	Vector3(float nx, float ny, float nz) : x(nx), y(ny), z(nz) {}
 
 	// 代入(Cの慣習に従い値への参照を返す)
 	Vector3& operator=(const Vector3 &a) {
