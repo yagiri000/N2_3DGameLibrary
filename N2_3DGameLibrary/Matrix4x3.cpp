@@ -314,7 +314,7 @@ float deternimant(const Matrix4x3 & m)
 
 Matrix4x3 inverse(const Matrix4x3 & m)
 {
-
+	return Matrix4x3();
 }
 
 Vector3 getTranslation(const Matrix4x3 & m)

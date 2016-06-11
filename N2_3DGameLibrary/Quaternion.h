@@ -9,9 +9,7 @@ public:
 	float w, x, y, z;
 
 	// P“™lŒ³”‚É‚·‚é
-	void identity() {
-		w = 1.0f, x = y = z = 0.0f;
-	}
+	void identity();
 
 	void setToRotateAboutX(float theta);
 	void setToRotateAboutY(float theta);

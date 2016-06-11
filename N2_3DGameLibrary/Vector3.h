@@ -23,7 +23,6 @@ public:
 		return *this;
 	}
 
-
 	// 等しさのチェック ==, !=
 	bool operator==(const Vector3 &a) {
 		return x == a.x && y == a.y && z == a.z;
@@ -62,7 +61,6 @@ public:
 	Vector3 operator/(float a) {
 		return Vector3(x / a, y / a, z / a);
 	}
-
 
 	// 組み合わせ代入演算(+=,-=,*=,/=)
 	Vector3 &operator+=(const Vector3 &a) {
@@ -110,12 +108,10 @@ public:
 	}
 };
 
-
 // ベクトルの大きさを計算する
 inline float vectorMag(const Vector3 &a) {
 	return sqrt(a.x * a.x + a.y*a.y + a.z*a.z);
 }
-
 
 // 2つのベクトルの外積を計算する
 inline Vector3 crossProduct(const Vector3 &a, const Vector3 &b) {
@@ -134,8 +130,6 @@ inline Vector3 operator*(float a, const Vector3 &b) {
 inline float distance(const Vector3 &a, const Vector3 &b) {
 	return sqrt(a.x*b.x + a.y*b.y + a.z*b.z);
 }
-
-
 
 // グローバル変数
 // グローバルなゼロベクトル定数を提供する
