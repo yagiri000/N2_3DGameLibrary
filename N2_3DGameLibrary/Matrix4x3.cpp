@@ -33,14 +33,17 @@ void Matrix4x3::setupLocalToParent(const Vector3 & pos, const EulerAngles & orie
 
 void Matrix4x3::setupLocalToParent(const Vector3 & pos, const RotationMatrix & orient)
 {
+	// TODO: 
 }
 
 void Matrix4x3::setupParentToLocal(const Vector3 & pos, const EulerAngles & orient)
 {
+	// TODO: 
 }
 
 void Matrix4x3::setupParentToLocal(const Vector3 & pos, const RotationMatrix & orient)
 {
+	// TODO: 
 }
 
 void Matrix4x3::setupRotate(int axis, float theta)
@@ -314,6 +317,7 @@ float deternimant(const Matrix4x3 & m)
 
 Matrix4x3 inverse(const Matrix4x3 & m)
 {
+	// TODO: 
 	return Matrix4x3();
 }
 
@@ -324,10 +328,12 @@ Vector3 getTranslation(const Matrix4x3 & m)
 
 Vector3 getPositionFromParentToLocalMatrix(const Matrix4x3 & m)
 {
+	// TODO: 
 	return Vector3();
 }
 
 Vector3 getPositionFromLocalToParentMatrix(const Matrix4x3 & m)
 {
+	// TODO: 
 	return Vector3();
 }

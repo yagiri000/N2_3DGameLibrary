@@ -40,7 +40,7 @@ extern const Quaternion kQuaternionIdentity;
 extern float dotProduct(const Quaternion &a, const Quaternion &b);
 
 // 球面線形補間
-extern Quaternion slerp(const Quaternion &a, const Quaternion &b);
+extern Quaternion slerp(const Quaternion & a, const Quaternion & b, float t);
 
 // 四元数の結合 入力された四元数の反対の角変位を表す四元数を返す
 extern Quaternion conjugate(const Quaternion &q);
