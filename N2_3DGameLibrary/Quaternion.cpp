@@ -52,12 +52,28 @@ void Quaternion::setToRotateAboutAxis(const Vector3 & axis, float theta)
 
 void Quaternion::setToRotateObjectToInertial(const EulerAngles & orientation)
 {
-	// TODO: 
+	float sp, sb, sh;
+	float cp, cb, ch;
+	sinCos(&sp, &cp, orientation.pitch * 0.5f);
+	sinCos(&sb, &cb, orientation.bank * 0.5f);
+	sinCos(&sh, &ch, orientation.heading * 0.5f);
+	w = ch * cp * cb + sh * sp * sb;
+	x = ch * sp * cb + sh * cp * sb;
+	y = -ch * sp * sb + sh * cp * cb;
+	z = -sh * sp * cb + ch * cp * sb;
 }
 
 void Quaternion::setToRotateInertialToObject(const EulerAngles & orientation)
 {
-	// TODO: 
+	float sp, sb, sh;
+	float cp, cb, ch;
+	sinCos(&sp, &cp, orientation.pitch * 0.5f);
+	sinCos(&sb, &cb, orientation.bank * 0.5f);
+	sinCos(&sh, &ch, orientation.heading * 0.5f);
+	w = ch * cp * cb + sh * sp * sb;
+	x = -ch * sp * cb - sh * cp * sb;
+	y = ch * sp * sb - sh * cp * cb;
+	z = sh * sp * cb - ch * cp * sb;
 }
 
 Quaternion Quaternion::operator*(const Quaternion & a) const
@@ -85,11 +101,18 @@ Quaternion & Quaternion::operator*=(const Quaternion & a)
 
 void Quaternion::normalize()
 {
-	// TODO 正解を確認
-	float oneOverR = 1.0f / sqrtf(x * x + y * y + z * z);
-	x *= oneOverR;
-	y *= oneOverR;
-	z *= oneOverR;
+	float mag = sqrtf(w * w + x * x + y * y + z * z);
+	if (mag > 0.0f) {
+		float oneOverMag = 1.0f / mag;
+		w *= oneOverMag;
+		x *= oneOverMag;
+		y *= oneOverMag;
+		z *= oneOverMag;
+	}
+	else {
+		assert(false);
+		identity();
+	}
 }
 
 float Quaternion::getRotationAngle() const
@@ -110,7 +133,6 @@ float dotProduct(const Quaternion & a, const Quaternion & b)
 
 Quaternion slerp(const Quaternion & a, const Quaternion & b, float t)
 {
-	// TODO:
 	Quaternion ret;
 	float w = a.w;
 	float x = a.x;
@@ -150,7 +172,6 @@ Quaternion slerp(const Quaternion & a, const Quaternion & b, float t)
 
 Quaternion conjugate(const Quaternion & q)
 {
-	// TODO: 正しいか確認
 	Quaternion ret;
 	ret.w = q.w;
 	ret.x = -q.x;
