@@ -80,6 +80,7 @@ Quaternion & Quaternion::operator*=(const Quaternion & a)
 	x = _x;
 	y = _y;
 	z = _z;
+	return *this;
 }
 
 void Quaternion::normalize()
@@ -111,19 +112,70 @@ Quaternion slerp(const Quaternion & a, const Quaternion & b, float t)
 {
 	// TODO:
 	Quaternion ret;
+	float w = a.w;
+	float x = a.x;
+	float y = a.y;
+	float z = a.z;
+
+	float cosOmega = a.w * b.w + a.x * b.x + a.y * b.y + a.z * b.z;
+
+	if (cosOmega < 0.0f) {
+		w = -w;
+		x = -x;
+		y = -y;
+		z = -z;
+		cosOmega = -cosOmega;
+	}
+
+	float k0, k1;
+	if (cosOmega > 0.9999f) {
+		k0 = 1.0f - t;
+		k1 = t;
+	}
+	else {
+		float sinOmega = sqrtf(1.0f - cosOmega * cosOmega);
+		float omega = atan2f(sinOmega, cosOmega);
+		float oneOverSinOmega = 1.0f / sinOmega;
+		k0 = sinf((1.0f - t) * omega) * oneOverSinOmega;
+		k1 = sinf(t * omega) * oneOverSinOmega;
+	}
+
+	ret.w = w * k0 + b.w * k1;
+	ret.x = x * k0 + b.x * k1;
+	ret.y = y * k0 + b.y * k1;
+	ret.z = z * k0 + b.z * k1;
+
 	return ret;
 }
 
 Quaternion conjugate(const Quaternion & q)
 {
-	// TODO: 
+	// TODO: ê≥ÇµÇ¢Ç©ämîF
 	Quaternion ret;
+	ret.w = q.w;
+	ret.x = -q.x;
+	ret.y = -q.y;
+	ret.z = -q.z;
 	return ret;
 }
 
 Quaternion pow(const Quaternion & q, float exponent)
 {
-	// TODO: 
 	Quaternion ret;
+	if (fabsf(q.w) < 0.9999f) {
+		float alpha = acosf(q.w);
+		float newAlpha = alpha * exponent;
+		ret.w = cosf(newAlpha);
+		float mult = sinf(newAlpha) / sinf(alpha);
+		ret.x *= mult * q.x;
+		ret.y *= mult * q.y;
+		ret.z *= mult * q.z;
+	}
+	else {
+		ret.w = q.w;
+		ret.x = q.x;
+		ret.y = q.y;
+		ret.z = q.z;
+	}
 	return ret;
 }

@@ -92,31 +92,51 @@ void EulerAngles::fromObjectToWorldMatrix(const Matrix4x3 & m)
 		pitch = -1.570796f;
 	}
 	else if (sp >= 1.0f) {
-		pitch = 1.570796;
+		pitch = 1.570796f;
 	}
 	else {
-		pitch = asin(sp);
+		pitch = asinf(sp);
 	}
 
 	// ジンバルロックをチェックする
 	if (sp > 0.9999f) {
 		bank = 0.0f;
-		heading = atan2(-m13, m11);
+		heading = atan2f(-m13, m11);
 	}
 	else {
-		heading = atan2(m31, m33);
-		bank = atan2(m12, m22);
+		heading = atan2f(m31, m33);
+		bank = atan2f(m12, m22);
 	}
 }
 
 void EulerAngles::fromWorldToObjectMatrix(const Matrix4x3 & m)
 {
-	// TODO:
+	float sp = m.m23;
+	if (fabs(sp) > 0.99999f) {
+		pitch = kPiOver2 * sp;
+		heading = atan2f(-m.m31, m.m11);
+		bank = 0.0f;
+	}
+	else {
+		heading = atan2f(m.m13, m.m33);
+		pitch = asinf(sp);
+		bank = atan2f(m.m21, m.m22);
+	}
 }
 
 void EulerAngles::fromRotationMatrix(const RotationMatrix & m)
 {
-	// TODO:
+	float sp = m.m23;
+	if (fabs(sp) > 0.99999f) {
+		pitch = kPiOver2 * sp;
+		heading = atan2f(-m.m31, m.m11);
+		bank = 0.0f;
+	}
+	else {
+		heading = atan2f(m.m13, m.m33);
+		pitch = asinf(sp);
+		bank = atan2f(m.m21, m.m22);
+	}
 }
 
 
