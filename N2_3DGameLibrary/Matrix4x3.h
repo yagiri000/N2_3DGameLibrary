@@ -55,7 +55,7 @@ Vector3		operator *(const Vector3 &p, const Matrix4x3 &m);
 Matrix4x3	operator *(const Matrix4x3 &a, const Matrix4x3 &b);
 
 Vector3		&operator *=(Vector3 &p, const Matrix4x3 &m);
-Matrix4x3	&operator *=(const Matrix4x3 &a, const Matrix4x3 &m);
+Matrix4x3	&operator *=(Matrix4x3 &a, const Matrix4x3 &m);
 
 // s—ñ®‚ğŒvZ‚·‚é
 float		deternimant(const Matrix4x3 &m);

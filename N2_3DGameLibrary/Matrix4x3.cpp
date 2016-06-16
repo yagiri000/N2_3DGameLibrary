@@ -1,6 +1,12 @@
+#include <assert.h>
+#include <math.h>
+
 #include "Matrix4x3.h"
 #include "Vector3.h"
 #include "Quaternion.h"
+#include "RotationMatrix.h"
+#include "MathUtil.h"
+#include "EulerAngles.h"
 
 void Matrix4x3::identity()
 {
@@ -28,19 +34,48 @@ void Matrix4x3::setupTranslation(const Vector3 & d)
 
 void Matrix4x3::setupLocalToParent(const Vector3 & pos, const EulerAngles & orient)
 {
-	// TODO: 
+	RotationMatrix orientMatrix;
+	orientMatrix.setup(orient);
+	setupLocalToParent(pos, orientMatrix);
 }
 
 void Matrix4x3::setupLocalToParent(const Vector3 & pos, const RotationMatrix & orient)
 {
+	m11 = orient.m11;
+	m12 = orient.m21;
+	m13 = orient.m31;
+	m21 = orient.m12;
+	m22 = orient.m22;
+	m23 = orient.m32;
+	m31 = orient.m13;
+	m32 = orient.m23;
+	m33 = orient.m33;
+	tx = pos.x;
+	ty = pos.y;
+	tz = pos.z;
 }
 
 void Matrix4x3::setupParentToLocal(const Vector3 & pos, const EulerAngles & orient)
 {
+	RotationMatrix orientMatrix;
+	orientMatrix.setup(orient);
+	setupParentToLocal(pos, orientMatrix);
 }
 
 void Matrix4x3::setupParentToLocal(const Vector3 & pos, const RotationMatrix & orient)
 {
+	m11 = orient.m11;
+	m12 = orient.m12;
+	m13 = orient.m13;
+	m21 = orient.m21;
+	m22 = orient.m22;
+	m23 = orient.m23;
+	m31 = orient.m31;
+	m32 = orient.m32;
+	m33 = orient.m33;
+	tx = -(pos.x * m11 + pos.y * m21 + pos.z * m31);
+	ty = -(pos.x * m12 + pos.y * m22 + pos.z * m32);
+	tz = -(pos.x * m13 + pos.y * m23 + pos.z * m33);
 }
 
 void Matrix4x3::setupRotate(int axis, float theta)
@@ -291,15 +326,43 @@ Matrix4x3 operator*(const Matrix4x3 & a, const Matrix4x3 & b)
 
 Vector3 & operator*=(Vector3 & p, const Matrix4x3 & m)
 {
-	// TODO: return ステートメントをここに挿入します
-	return Vector3();
+	float x, y, z;
+	x = p.x * m.m11 + p.y * m.m21 + p.z * m.m31 + m.tx;
+	y = p.y * m.m12 + p.y * m.m22 + p.z * m.m32 + m.ty;
+	z = p.z * m.m13 + p.y * m.m23 + p.z * m.m33 + m.tz;
+	p.x = x;
+	p.y = y;
+	p.z = z;
+	return p;
 }
 
-Matrix4x3 & operator*=(const Matrix4x3 & a, const Matrix4x3 & m)
+Matrix4x3 & operator*=(Matrix4x3 & a, const Matrix4x3 & b)
 {
-	// TODO: return ステートメントをここに挿入します
-	return Matrix4x3();
-
+	float m11 = a.m11 * b.m11 + a.m12 * b.m21 + a.m13 * b.m31;
+	float m12 = a.m11 * b.m12 + a.m12 * b.m22 + a.m13 * b.m32;
+	float m13 = a.m11 * b.m13 + a.m12 * b.m23 + a.m13 * b.m33;
+	float m21 = a.m21 * b.m11 + a.m22 * b.m21 + a.m23 * b.m31;
+	float m22 = a.m21 * b.m12 + a.m22 * b.m22 + a.m23 * b.m32;
+	float m23 = a.m21 * b.m13 + a.m22 * b.m23 + a.m23 * b.m33;
+	float m31 = a.m31 * b.m11 + a.m32 * b.m21 + a.m33 * b.m31;
+	float m32 = a.m31 * b.m12 + a.m32 * b.m22 + a.m33 * b.m32;
+	float m33 = a.m31 * b.m13 + a.m32 * b.m23 + a.m33 * b.m33;
+	float tx = a.tx * b.m11 + a.ty * b.m21 + a.tz * b.m31;
+	float ty = a.tx * b.m12 + a.ty * b.m22 + a.tz * b.m32;
+	float tz = a.tx * b.m13 + a.ty * b.m23 + a.tz * b.m33;
+	a.m11 = m11;
+	a.m12 = m12;
+	a.m13 = m13;
+	a.m21 = m21;
+	a.m22 = m22;
+	a.m23 = m23;
+	a.m31 = m31;
+	a.m32 = m32;
+	a.m33 = m33;
+	a.tx = tx;
+	a.ty = ty;
+	a.tz = tz;
+	return a;
 }
 
 float deternimant(const Matrix4x3 & m)
@@ -314,7 +377,26 @@ float deternimant(const Matrix4x3 & m)
 
 Matrix4x3 inverse(const Matrix4x3 & m)
 {
-	return Matrix4x3();
+	float det = deternimant(m);
+	assert(fabsf(det) > 0.000001f);
+	float oneOverDet = 1.0f / det;
+
+	Matrix4x3 r;
+	r.m11 = (m.m22 * m.m33 - m.m23 * m.m32) * oneOverDet;
+	r.m12 = (m.m13 * m.m32 - m.m12 * m.m33) * oneOverDet;
+	r.m13 = (m.m12 * m.m23 - m.m13 * m.m22) * oneOverDet;
+	r.m21 = (m.m23 * m.m31 - m.m21 * m.m33) * oneOverDet;
+	r.m22 = (m.m11 * m.m33 - m.m13 * m.m31) * oneOverDet;
+	r.m23 = (m.m13 * m.m21 - m.m11 * m.m23) * oneOverDet;
+	r.m31 = (m.m21 * m.m32 - m.m22 * m.m31) * oneOverDet;
+	r.m32 = (m.m12 * m.m31 - m.m11 * m.m32) * oneOverDet;
+	r.m33 = (m.m11 * m.m22 - m.m12 * m.m21) * oneOverDet;
+
+	r.tx = -(m.tx * r.m11 + m.ty * r.m21 + m.tz * r.m31);
+	r.ty = -(m.tx * r.m12 + m.ty * r.m22 + m.tz * r.m32);
+	r.tz = -(m.tx * r.m13 + m.ty * r.m23 + m.tz * r.m33);
+
+	return r;
 }
 
 Vector3 getTranslation(const Matrix4x3 & m)
@@ -324,10 +406,14 @@ Vector3 getTranslation(const Matrix4x3 & m)
 
 Vector3 getPositionFromParentToLocalMatrix(const Matrix4x3 & m)
 {
-	return Vector3();
+	return Vector3(
+		-(m.tx * m.m11 + m.ty * m.m12 + m.tz * m.m13),
+		-(m.tx * m.m21 + m.ty * m.m22 + m.tz * m.m23),
+		-(m.tx * m.m31 + m.ty * m.m32 + m.tz * m.m33)
+		);
 }
 
 Vector3 getPositionFromLocalToParentMatrix(const Matrix4x3 & m)
 {
-	return Vector3();
+	return Vector3(m.tx, m.ty, m.tz);
 }

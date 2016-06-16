@@ -39,10 +39,40 @@ void EulerAngles::canonize() {
 
 void EulerAngles::fromObjectToInertialQuaternion(const Quaternion & q)
 {
+	// sinを求める
+	float sp = -2.0f *(q.y * q.z - q.w * q.x);
+
+	if (fabs(sp) > 0.9999f) {
+		// 真上か真下を向いている
+		pitch = 1.570796f * sp; //pi / 2
+
+		heading = atan2f(-q.x*q.z + q.w*q.y, 0.5f - q.y*q.y - q.z*q.z);
+		bank = 0.0f;
+	}
+	else {
+		pitch = asinf(sp);
+		heading = atan2f(q.x * q.z + q.w * q.y, 0.5f - q.x*q.x - q.y*q.y);
+		bank = atan2f(q.x * q.y + q.w * q.z, 0.5f - q.x * q.x - q.z * q.z);
+	}
 }
 
 void EulerAngles::fromInertialToObjectQuaternion(const Quaternion & q)
 {
+	// sinを求める
+	float sp = -2.0f *(q.y * q.z + q.w * q.x);
+
+	if (fabs(sp) > 0.9999f) {
+		// 真上か真下を向いている
+		pitch = 1.570796f * sp; //pi / 2
+
+		heading = atan2f(-q.x * q.z - q.w * q.y, 0.5f - q.y * q.y - q.z * q.z);
+		bank = 0.0f;
+	}
+	else {
+		pitch = asinf(sp);
+		heading = atan2f(q.x * q.z - q.w * q.y, 0.5f - q.x * q.x - q.y * q.y);
+		bank = atan2f(q.x * q.y - q.w * q.z, 0.5f - q.x * q.x - q.z * q.z);
+	}
 }
 
 void EulerAngles::fromObjectToWorldMatrix(const Matrix4x3 & m)
@@ -56,7 +86,6 @@ void EulerAngles::fromObjectToWorldMatrix(const Matrix4x3 & m)
 	float m31 = m.m31;
 	float m32 = m.m32;
 	float m33 = m.m33;
-
 
 	float sp = -m32;
 	if (sp <= -1.0f) {
@@ -82,10 +111,32 @@ void EulerAngles::fromObjectToWorldMatrix(const Matrix4x3 & m)
 
 void EulerAngles::fromWorldToObjectMatrix(const Matrix4x3 & m)
 {
+	float sp = m.m23;
+	if (fabs(sp) > 0.99999f) {
+		pitch = kPiOver2 * sp;
+		heading = atan2f(-m.m31, m.m11);
+		bank = 0.0f;
+	}
+	else {
+		heading = atan2f(m.m13, m.m33);
+		pitch = asinf(sp);
+		bank = atan2f(m.m21, m.m22);
+	}
 }
 
 void EulerAngles::fromRotationMatrix(const RotationMatrix & m)
 {
+	float sp = m.m23;
+	if (fabs(sp) > 0.99999f) {
+		pitch = kPiOver2 * sp;
+		heading = atan2f(-m.m31, m.m11);
+		bank = 0.0f;
+	}
+	else {
+		heading = atan2f(m.m13, m.m33);
+		pitch = asinf(sp);
+		bank = atan2f(m.m21, m.m22);
+	}
 }
 
 
