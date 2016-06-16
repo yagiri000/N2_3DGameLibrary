@@ -150,7 +150,6 @@
     <ClCompile Include="RotationMatrix.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AngleMatrixToEular.h" />
     <ClInclude Include="EulerAngles.h" />
     <ClInclude Include="MathUtil.h" />
     <ClInclude Include="Matrix4x3.h" />
