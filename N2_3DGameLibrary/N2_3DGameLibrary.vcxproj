@@ -142,6 +142,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AABB3.cpp" />
+    <ClCompile Include="EditTriMesh.cpp" />
     <ClCompile Include="EulerAngles.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MathUtil.cpp" />
@@ -150,6 +152,8 @@
     <ClCompile Include="RotationMatrix.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AABB3.h" />
+    <ClInclude Include="EditTriMesh.h" />
     <ClInclude Include="EulerAngles.h" />
     <ClInclude Include="MathUtil.h" />
     <ClInclude Include="Matrix4x3.h" />

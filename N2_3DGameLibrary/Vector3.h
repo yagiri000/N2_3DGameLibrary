@@ -128,7 +128,11 @@ inline Vector3 operator*(float a, const Vector3 &b) {
 
 // ‹——£‚ğ‹‚ß‚é
 inline float distance(const Vector3 &a, const Vector3 &b) {
-	return sqrt(a.x*b.x + a.y*b.y + a.z*b.z);
+	return sqrt(
+		(a.x - b.x) * (a.x - b.x) +
+		(a.y - b.y) * (a.y - b.y) +
+		(a.z - b.z) * (a.z - b.z) 
+		);
 }
 
 // ƒOƒ[ƒoƒ‹•Ï”

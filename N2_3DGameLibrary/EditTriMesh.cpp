@@ -45,36 +45,43 @@ EditTriMesh::~EditTriMesh()
 EditTriMesh & EditTriMesh::operator=(const EditTriMesh & src)
 {
 	// TODO: return ステートメントをここに挿入します
+	return EditTriMesh();
 }
 
-Vertex & EditTriMesh::vertex(int vertexIndex)
+EditTriMesh::Vertex & EditTriMesh::vertex(int vertexIndex)
 {
 	// TODO: return ステートメントをここに挿入します
+	return Vertex();
 }
 
-const Vertex & EditTriMesh::vertex(int vertexIndex) const
+const EditTriMesh::Vertex & EditTriMesh::vertex(int vertexIndex) const
 {
 	// TODO: return ステートメントをここに挿入します
+	return Vertex();
 }
 
-Tri & EditTriMesh::tri(int triIndex)
+EditTriMesh::Tri & EditTriMesh::tri(int triIndex)
 {
 	// TODO: return ステートメントをここに挿入します
+	return Tri();
 }
 
-const Tri & EditTriMesh::tri(int triIndex) const
+const EditTriMesh::Tri & EditTriMesh::tri(int triIndex) const
 {
 	// TODO: return ステートメントをここに挿入します
+	return Tri();
 }
 
-Material & EditTriMesh::material(int materialIndex)
+EditTriMesh::Material & EditTriMesh::material(int materialIndex)
 {
 	// TODO: return ステートメントをここに挿入します
+	return Material();
 }
 
-const Material & EditTriMesh::material(int materialIndex) const
+const EditTriMesh::Material & EditTriMesh::material(int materialIndex) const
 {
 	// TODO: return ステートメントをここに挿入します
+	return Material();
 }
 
 void EditTriMesh::empty()
