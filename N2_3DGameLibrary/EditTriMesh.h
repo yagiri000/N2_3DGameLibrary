@@ -1,168 +1,349 @@
-#pragma once
+/////////////////////////////////////////////////////////////////////////////
+//
+// 3D Math Primer for Games and Graphics Development
+//
+// EditTriMesh.h - Declarations for class EditTriMesh
+//
+// Visit gamemath.com for the latest version of this file.
+//
+// For more details, see EditTriMesh.cpp
+//
+/////////////////////////////////////////////////////////////////////////////
 
+#ifndef __EDITTRIMESH_H_INCLUDED__
+#define __EDITTRIMESH_H_INCLUDED__
+
+#ifndef __VECTOR3_H_INCLUDED__
 #include "Vector3.h"
-#include "Matrix4x3.h"
+#endif
 
-class EditTriMesh
-{
+class Matrix4x3;
+class AABB3;
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// class EditTriMesh
+//
+// Store an indexed triangle mesh in a very flexible format that makes
+// editing and mesh manipulations easy.  (NOT optimized for rendering,
+// collision detection, or anything else.)
+//
+// This class supports texture mapping coordinates and vertex normals
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class EditTriMesh {
 public:
+
+	// Local types
+
+	// class Vertex represents the information we keep track of for
+	// one vertex
 
 	class Vertex {
 	public:
-		Vertex() {
-			setDefaults();
-		}
-		void setDefaults();
-		Vector3 p;
-		float u, v;
-		Vector3 normal;
-		int mark;
+		Vertex() { setDefaults(); }
+		void	setDefaults();
+
+		// 3D vertex position;
+
+		Vector3	p;
+
+		// Vertex-level texture mapping coordinates.  Notice that
+		// these may be invalid at various times.  The "real" UVs
+		// are in the triangles.  For rendering, we often need UV's
+		// at the vertex level.  But for many other optimizations,
+		// we may need to weld vertices for faces with different
+		// UV's.
+
+		float	u, v;
+
+		// vertex-level surface normal.  Again, this is only
+		// valid in certain circumstances
+
+		Vector3	normal;
+
+		// Utility "mark" variable, often handy
+
+		int	mark;
 	};
+
+	// class Tri represents the information we keep track of
+	// for one triangle
 
 	class Tri {
 	public:
 		Tri() { setDefaults(); }
-		void setDefaults();
+		void	setDefaults();
+
+		// Face vertices.
 
 		struct Vert {
-			int index;
-			float u, v;
+			int	index;	// index into the vertex list
+			float	u, v;	// mapping coords
 		};
 
-		Vert v[3];
-		
-		// 面の法線
-		Vector3 normal;
+		Vert	v[3];
 
-		// この三角形はどの部分に存在するか？
-		int part;
+		// Surface normal
 
-		// マテリアルリストへのインデックス
-		int material;
+		Vector3	normal;
 
-		// Utilityのmark変数
-		int mark;
+		// Which part does this tri belong to?
 
-		// この三角形が縮退している場合trueを返す
-		bool isDegenerate() const;
+		int	part;
 
-		// 頂点(0..2)のインデックスを返す
-		// その頂点が使われていない場合は-1を返す
-		int findVertex(int vertexIndex) const;
+		// Index into the material list
+
+		int	material;
+
+		// Utility "mark" variable, often handy
+
+		int	mark;
+
+		// Return true if the triangle is "degenerate" - it uses
+		// the same vertex more than once
+
+		bool	isDegenerate() const;
+
+		// Return index of vertex (0..2), or -1 if we
+		// don't use that vertex
+
+		int	findVertex(int vertexIndex) const;
 	};
+
+	// This is the information we store for a "material"
+	// In our case, we're only going to store a simple
+	// diffuse texture map.  However, more complex properties
+	// are often associated with materials.
 
 	class Material {
 	public:
 		Material() { setDefaults(); }
-		void setDefaults();
-		char diffuseTextureName[256];
-		int mark;
+		void	setDefaults();
+
+		char	diffuseTextureName[256];
+
+		// Utility "mark" variable, often handy
+
+		int	mark;
 	};
 
-	class OptimationParameters {
+	// This is the information we store for a "part"
+	// We don't store much except the part name,
+	// and a mark variable
+
+	class Part {
 	public:
-		OptimationParameters() { setDefaults(); }
-		void setDefaults();
+		Part() { setDefaults(); }
+		void	setDefaults();
 
-		// 2つの頂点が同じ場所に存在するかを決定する際に使用する許容値
-		float coincidentVertexTolerance;
+		char	name[256];
 
-		float cosOfEdgeAngleTolerance;
-		void setEdgeAngleToleranceInDegrees(float degrees);
+		// Utility "mark" variable, often handy
+
+		int	mark;
 	};
+
+	// This class contains options used to control
+	// optimization
+
+	class OptimizationParameters {
+	public:
+		OptimizationParameters() { setDefaults(); }
+		void	setDefaults();
+
+		// A tolerance value which is used to
+		// determine if two vertices are coincident.
+
+		float	coincidentVertexTolerance;
+
+		// Triangle angle tolerance.  Vertices
+		// are not welded if the are on an edge
+		// and the angle between the nrmals of the
+		// triangles on this edge are too
+		// far apart.  We store the cosine of this
+		// value since that's what's actually used.
+		// Use the functions to set it
+
+		float	cosOfEdgeAngleTolerance;
+		void	setEdgeAngleToleranceInDegrees(float degrees);
+	};
+
+	// Standard class object maintenance
 
 	EditTriMesh();
 	EditTriMesh(const EditTriMesh &x);
 	~EditTriMesh();
 
+	// Operator = makes a copy of the mesh
+
 	EditTriMesh &operator=(const EditTriMesh &src);
 
-	int vertexcount() const { return vCount; }
-	int triCount() const { return tCount; }
-	int materialCount() const { return mCount; }
+	// Accessors to the mesh data:
 
-	Vertex &vertex(int vertexIndex);
-	const Vertex &vertex(int vertexIndex)const;
-	Tri &tri(int triIndex);
-	const Tri &tri(int triIndex) const;
-	Material &material(int materialIndex);
-	const Material &material(int materialIndex) const;
+	int	vertexCount() const { return vCount; }
+	int	triCount() const { return tCount; }
+	int	materialCount() const { return mCount; }
+	int	partCount() const { return pCount; }
 
-	void empty();
+	Vertex		&vertex(int vertexIndex);
+	const Vertex	&vertex(int vertexIndex) const;
 
-	void setVertexcount(int vc);
-	void setTriCount(int tc);
-	void setmaterialCount(int mc);
+	Tri		&tri(int triIndex);
+	const Tri	&tri(int triIndex) const;
 
-	// 三角形、頂点、マテリアルを追加する
-	int addTri();
-	int addTri(const Tri &t);
-	int addVertex();
-	int addVertex(const Vertex &v);
+	Material	&material(int materialIndex);
+	const Material	&material(int materialIndex) const;
+
+	Part		&part(int partIndex);
+	const Part	&part(int partIndex) const;
+
+	// Basic mesh operations
+
+	// Reset the mesh to empty state
+
+	void	empty();
+
+	// Set list counts.  If the lists are grown, the new
+	// entries will be properly defaulted.  If the lists
+	// are shrunk, no check is made to ensure that a valid
+	// mesh remains.
+
+	void	setVertexCount(int vc);
+	void	setTriCount(int tc);
+	void	setMaterialCount(int mc);
+	void	setPartCount(int pc);
+
+	// Add a triangle/vertex/material.  The index of the newly
+	// added item is returned
+
+	int	addTri();
+	int	addTri(const Tri &t);
+	int	addVertex();
+	int	addVertex(const Vertex &v);
 	int addMaterial();
-	int addMaterial(const Material &m);
+	int	dupVertex(int srcVertexIndex);
+	int	addMaterial(const Material &m);
+	int	addPart(const Part &p);
 
-	// 全てのマークを一度にリセットする便利関数
-	void markAllVerticles(int mark);
-	void markAllTris(int mark);
-	void markAllMaterials(int mark);
+	// Handy functions to reset all marks at once
 
-	void deleteVertex(int vertexIndex);
-	void deleteTri(int triIndex);
-	void deleteMaterial(int materialIndex);
-	void deleteUnusedMaterials();
-	void deleteMarkedTris(int mark);
-	void deleteDegenerateTris();
+	void	markAllVertices(int mark);
+	void	markAllTris(int mark);
+	void	markAllMaterials(int mark);
+	void	markAllParts(int mark);
 
-	// 全ての面をお互いに分離する
-	// これは、1つの三角形だけで使われる各頂点を持つ新しい頂点リストを作成する
-	// 同時に、使用されていない頂点を削除する
-	void detachAllFaces();
+	// Deletion.
 
-	// 全頂点を座標変換する
-	void transformVerticles(const Matrix4x3 &m);
+	void	deleteVertex(int vertexIndex);
+	void	deleteTri(int triIndex);
+	void	deleteMarkedTris(int mark);
+	void	deleteDegenerateTris();
+	void	deleteMaterial(int materialIndex);
+	void	deleteUnusedMaterials();
+	void	deletePart(int partIndex);
+	void	deleteEmptyParts();
 
-	// 三角形レベルの面の法線を計算する
-	void computeOneTriNormal(int triIndex);
-	void computeOneTriNormal(Tri &t);
-	void computeTriNormals();
+	// Extract parts
 
-	// 面が使用している順番に頂点リストの順番を変える
-	void optimizeVertexOrder(bool removeUnusedVerticles);
-	
+	void	extractParts(EditTriMesh *meshes);
+	void	extractOnePartOneMaterial(int partIndex, int materialIndex, EditTriMesh *result);
 
-	// マテリアルで三角形をソートする
-	void sortTrisByMaterial();
+	// Detach all the faces from one another.  This
+	// creates a new vertex list, with each vertex
+	// only used by one triangle.  Simultaneously,
+	// unused vertices are removed.
 
-	// 同じ場所にある頂点を貼り合わせる
-	void weldVerticles(const OptimationParameters &opt);
+	void	detachAllFaces();
 
-	// 頂点のUVが正しいかをチェックし、必要な場合には、頂点を複製する
-	void copyUvsIntoVerticles();
+	// Transform all the vertices
 
-	// 最適化を全て行い、正しいライティングを用いて高速にレンダリング出来るモデルを準備する
-	void optimizeForRendering();
+	void	transformVertices(const Matrix4x3 &m);
 
-	bool importS3d(const char *filename, char *returnErrMsg);
-	bool exportS3d(const char *filename, char *returnErrMsg);
+	// Computations
 
-	void validityCheck();
-	bool validityCheck(char *returnErrMsg);
+	// Compute triangle-level surface normals
 
-	private:
-		int vAlloc;
-		int vCount;
-		Vertex *vList;
-		int tAlloc;
-		int tCount;
-		Tri *tList;
-		int mCount;
-		Material *mList;
-		void construct();
+	void	computeOneTriNormal(int triIndex);
+	void	computeOneTriNormal(Tri &t);
+	void	computeTriNormals();
 
+	// Compute vertex level surface normals.  This
+	// automatically computes the triangle level
+	// surface normals
 
+	void	computeVertexNormals();
 
+	// Compute the size of the mesh
 
+	AABB3	computeBounds() const;
 
+	// Optimization
+
+	// Re-order the vertex list, in the order that they
+	// are used by the faces.  This can improve cache
+	// performace and vertex caching by increasing the
+	// locality of reference.  This function can also remove
+	// unused vertices simultaneously
+
+	void	optimizeVertexOrder(bool removeUnusedVertices = true);
+
+	// Sort triangles by material.  This is VERY important
+	// for effecient rendering
+
+	void	sortTrisByMaterial();
+
+	// Weld coincident vertices
+
+	void	weldVertices(const OptimizationParameters &opt);
+
+	// Ensure that the vertex UVs are correct, possibly
+	// duplicating vertices if necessary
+
+	void	copyUvsIntoVertices();
+
+	// Do all of the optimizations and prepare the model
+	// for fast rendering under *most* rendering systems,
+	// with proper lighting.
+
+	void	optimizeForRendering();
+
+	// Import/Export S3D format
+
+	bool	importS3d(const char *filename, char *returnErrMsg);
+	void	exportS3d(const char *filename);
+
+	// Debugging
+
+	void	validityCheck();
+	bool	validityCheck(char *returnErrMsg);
+
+	// Private representation
+
+private:
+
+	// The mesh lists
+
+	int		vAlloc;
+	int		vCount;
+	Vertex		*vList;
+
+	int		tAlloc;
+	int		tCount;
+	Tri		*tList;
+
+	int		mCount;
+	Material	*mList;
+
+	int		pCount;
+	Part		*pList;
+
+	// Implementation details:
+
+	void	construct();
 };
+
+/////////////////////////////////////////////////////////////////////////////
+#endif // #ifndef __EDITTRIMESH_H_INCLUDED__
 

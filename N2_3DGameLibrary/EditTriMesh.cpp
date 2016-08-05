@@ -1,97 +1,190 @@
+#include <assert.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "MathUtil.h"
 #include "EditTriMesh.h"
+#include "CommonStuff.h"
+#include "Matrix4x3.h"
+#include "AABB3.h"
+
+static int vertexCompureByMark(const void *va, const void *vb) {
+	const EditTriMesh::Vertex *a = (const EditTriMesh::Vertex *)va;
+	const EditTriMesh::Vertex *b = (const EditTriMesh::Vertex *)vb;
+
+	return a->mark - b->mark;
+}
+
+static int triCompareByMaterial(const void *va, const void *vb) {
+	const EditTriMesh::Tri *a = (const EditTriMesh::Tri *)va;
+	const EditTriMesh::Tri *b = (const EditTriMesh::Tri *)vb;
+
+	if (a->material < b->material)return -1;
+	if (a->material > b->material)return 1;
+
+	return a->mark - b->mark;
+}
+
+static bool skipLine(FILE *f) {
+	for (;;) {
+		int c = fgetc(f);
+		if (c < 0) {
+			return false;
+		}
+		if (c == '\n') {
+			return true;
+		}
+	}
+}
 
 void EditTriMesh::Vertex::setDefaults()
 {
-	// TODO
+	memset(this, 0, sizeof(this));
 }
 
 void EditTriMesh::Tri::setDefaults()
 {
-	// TODO
+	memset(this, 0, sizeof(this));
 }
 
 bool EditTriMesh::Tri::isDegenerate() const
 {
-	// TODO
-	return false;
+	return
+		(v[0].index == v[1].index) ||
+		(v[1].index == v[2].index) ||
+		(v[2].index == v[0].index);
 }
 
 int EditTriMesh::Tri::findVertex(int vertexIndex) const
 {
-	// TODO
-	return 0;
+	if (v[0].index == vertexIndex) return 0;
+	if (v[1].index == vertexIndex) return 1;
+	if (v[2].index == vertexIndex) return 2;
+
+	return -1;
 }
 
 void EditTriMesh::Material::setDefaults()
 {
-	// TODO
+	memset(this, 0, sizeof(this));
 }
 
-void EditTriMesh::OptimationParameters::setDefaults()
+void EditTriMesh::OptimizationParameters::setDefaults()
 {
-	// TODO
+	memset(this, 0, sizeof(this));
 }
 
-void EditTriMesh::OptimationParameters::setEdgeAngleToleranceInDegrees(float degrees)
+void EditTriMesh::OptimizationParameters::setEdgeAngleToleranceInDegrees(float degrees)
 {
-	// TODO
+	if (degrees >= 180.0f) {
+		cosOfEdgeAngleTolerance = -999.0f;
+	}
+	else {
+		cosOfEdgeAngleTolerance = cos(degrees * kPi / 180.0f);
+	}
 }
 
 EditTriMesh::EditTriMesh()
 {
-	// TODO
+	construct();
 }
 
 EditTriMesh::EditTriMesh(const EditTriMesh & x)
 {
-	// TODO
+	construct();
+	*this = x;
 }
 
 EditTriMesh::~EditTriMesh()
 {
-	// TODO
+	empty();
 }
 
 EditTriMesh & EditTriMesh::operator=(const EditTriMesh & src)
 {
-	// TODO: return ステートメントをここに挿入します
-	return EditTriMesh();
+	int i;
+	empty();
+
+	setMaterialCount(src.materialCount());
+	for (i = 0; i < materialCount(); i++) {
+		material(i) = src.material(i);
+	}
+
+	setPartCount(src.partCount());
+	for (i = 0; i < partCount(); ++i) {
+		part(i) = src.part(i);
+	}
+
+	if (src.vertexCount() > 0) {
+		int bytes = src.vertexCount() * sizeof(*vList);
+
+		vList = (Vertex *)::malloc(bytes);
+		if (vList == NULL) {
+			ABORT("Out of memory");
+		}
+		vCount = src.vertexCount();
+		vAlloc = vCount;
+
+		memcpy(vList, src.vList, bytes);
+	}
+
+	if (src.triCount() > 0) {
+		int bytes = src.triCount() * sizeof(*tList);
+
+		tList = (Tri *)::malloc(bytes);
+		if (tList == NULL) {
+			ABORT("Out of memory");
+		}
+		tCount = src.triCount();
+		tAlloc = tCount;
+
+		memcpy(tList, src.tList, bytes);
+	}
+
+	return *this;
 }
 
 EditTriMesh::Vertex & EditTriMesh::vertex(int vertexIndex)
 {
-	// TODO: return ステートメントをここに挿入します
-	return Vertex();
+	assert(vertexIndex >= 0);
+	assert(vertexIndex < vCount);
+	return vList[vertexIndex];
 }
 
 const EditTriMesh::Vertex & EditTriMesh::vertex(int vertexIndex) const
 {
-	// TODO: return ステートメントをここに挿入します
-	return Vertex();
+	assert(vertexIndex >= 0);
+	assert(vertexIndex < vCount);
+	return vList[vertexIndex];
 }
 
 EditTriMesh::Tri & EditTriMesh::tri(int triIndex)
 {
-	// TODO: return ステートメントをここに挿入します
-	return Tri();
+	assert(triIndex >= 0);
+	assert(triIndex < tCount);
+	return tList[triIndex];
 }
 
 const EditTriMesh::Tri & EditTriMesh::tri(int triIndex) const
 {
-	// TODO: return ステートメントをここに挿入します
-	return Tri();
+	assert(triIndex >= 0);
+	assert(triIndex < tCount);
+	return tList[triIndex];
 }
 
 EditTriMesh::Material & EditTriMesh::material(int materialIndex)
 {
-	// TODO: return ステートメントをここに挿入します
-	return Material();
+	assert(materialIndex >= 0);
+	assert(materialIndex < mCount);
+	return mList[materialIndex];
 }
 
 const EditTriMesh::Material & EditTriMesh::material(int materialIndex) const
 {
-	// TODO: return ステートメントをここに挿入します
-	return Material();
+	assert(materialIndex >= 0);
+	assert(materialIndex < mCount);
+	return mList[materialIndex];
 }
 
 void EditTriMesh::empty()
@@ -99,7 +192,7 @@ void EditTriMesh::empty()
 	// TODO
 }
 
-void EditTriMesh::setVertexcount(int vc)
+void EditTriMesh::setVertexCount(int vc)
 {
 	// TODO
 }
@@ -109,7 +202,7 @@ void EditTriMesh::setTriCount(int tc)
 	// TODO
 }
 
-void EditTriMesh::setmaterialCount(int mc)
+void EditTriMesh::setMaterialCount(int mc)
 {
 	// TODO
 }
@@ -270,5 +363,14 @@ bool EditTriMesh::validityCheck(char * returnErrMsg)
 
 void EditTriMesh::construct()
 {
-	// TODO
+	vAlloc = 0;
+	vCount = 0;
+	vList = NULL;
+
+	tAlloc = 0;
+	tCount = 0;
+	tList = NULL;
+
+	mCount = 0;
+	mList = NULL;
 }

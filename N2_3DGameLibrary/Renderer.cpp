@@ -15,7 +15,6 @@ int Renderer::getVideoModeCount()
 
 const VideoMode & Renderer::getVideoMode(int index)
 {
-	// TODO: return ステートメントをここに挿入します
 }
 
 void Renderer::init(const VideoMode & mode)
@@ -211,12 +210,10 @@ void Renderer::boxFill(int x1, int y1, int x2, int y2)
 
 const Matrix4x3 & Renderer::getModelToCameraMatrix()
 {
-	// TODO: return ステートメントをここに挿入します
 }
 
 const Matrix4x3 & Renderer::getModelToWorldMatrix()
 {
-	// TODO: return ステートメントをここに挿入します
 }
 
 int Renderer::computeOutCode(const Vector3 & p)
