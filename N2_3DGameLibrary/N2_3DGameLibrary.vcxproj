@@ -150,6 +150,7 @@
     <ClCompile Include="Matrix4x3.cpp" />
     <ClCompile Include="Quaternion.cpp" />
     <ClCompile Include="RotationMatrix.cpp" />
+    <ClCompile Include="TriMesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AABB3.h" />
@@ -159,6 +160,7 @@
     <ClInclude Include="Matrix4x3.h" />
     <ClInclude Include="Quaternion.h" />
     <ClInclude Include="RotationMatrix.h" />
+    <ClInclude Include="TriMesh.h" />
     <ClInclude Include="Vector3.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
