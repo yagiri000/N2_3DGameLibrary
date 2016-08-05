@@ -103,7 +103,7 @@ public:
 	}
 
 	// 内積をオーバーロード
-	float operator*(const Vector3 &a) {
+	float operator*(const Vector3 &a) const{
 		return x * a.x + y * a.y + z * a.z;
 	}
 };
@@ -131,8 +131,17 @@ inline float distance(const Vector3 &a, const Vector3 &b) {
 	return sqrt(
 		(a.x - b.x) * (a.x - b.x) +
 		(a.y - b.y) * (a.y - b.y) +
-		(a.z - b.z) * (a.z - b.z) 
-		);
+		(a.z - b.z) * (a.z - b.z)
+	);
+}
+
+// 距離の2乗を求める
+inline float distanceSquared(const Vector3 &a, const Vector3 &b) {
+	return 
+		(a.x - b.x) * (a.x - b.x) +
+		(a.y - b.y) * (a.y - b.y) +
+		(a.z - b.z) * (a.z - b.z)
+	;
 }
 
 // グローバル変数
